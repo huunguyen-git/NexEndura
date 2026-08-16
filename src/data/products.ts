@@ -1,0 +1,151 @@
+export interface Product {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  comparePrice?: number;
+  currency: string;
+  rating: number;
+  reviews: number;
+  imageUrl: string;
+  category: string;
+  isFavorite: boolean;
+  isNew?: boolean;
+  colors: string[];
+}
+
+export const products: Product[] = [
+  {
+    id: 'p1',
+    name: 'Phantom Elite FG Football Boots',
+    brand: 'Nike',
+    price: 999.00,
+    rating: 4.9,
+    reviews: 124,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?q=80&w=600&auto=format&fit=crop',
+    category: 'football',
+    isNew: true,
+    colors: ['#000000', '#ff0000', '#ffffff'],
+  },
+  {
+    id: 'p2',
+    name: 'Pro-Grip Official Game Basketball',
+    brand: 'Deux par Deux',
+    price: 249.00,
+    rating: 4.8,
+    reviews: 89,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=600&auto=format&fit=crop',
+    category: 'basketball',
+    colors: ['#c15b19'],
+  },
+  {
+    id: 'p3',
+    name: 'AeroGlide Ultra Running Shoes',
+    brand: 'Paisley & Gray',
+    price: 650.00,
+    rating: 4.7,
+    reviews: 210,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop',
+    category: 'running',
+    isNew: true,
+    colors: ['#ff0000', '#000000'],
+  },
+  {
+    id: 'p4',
+    name: 'Carbon Pro Match Tennis Racket',
+    brand: 'Wilson',
+    price: 1100.00,
+    rating: 4.9,
+    reviews: 56,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?q=80&w=600&auto=format&fit=crop',
+    category: 'tennis',
+    colors: ['#000000', '#ffd700'],
+  },
+  {
+    id: 'p5',
+    name: 'Compression Training Top',
+    brand: 'Ally Fashion',
+    price: 180.00,
+    rating: 4.6,
+    reviews: 340,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1581605405669-fcdf81165afa?q=80&w=600&auto=format&fit=crop',
+    category: 'gym-fitness',
+    colors: ['#000000', '#333333', '#0000ff'],
+  },
+  {
+    id: 'p6',
+    name: 'Elite Goalkeeper Gloves V2',
+    brand: 'Adidas',
+    price: 320.00,
+    rating: 4.8,
+    reviews: 78,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=600&auto=format&fit=crop',
+    category: 'football',
+    colors: ['#ffffff', '#00ff00'],
+  },
+  {
+    id: 'p7',
+    name: 'Zoomx Invincible Run Flyknit',
+    brand: 'Nike',
+    price: 780.00,
+    rating: 4.9,
+    reviews: 412,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=600&auto=format&fit=crop',
+    category: 'running',
+    colors: ['#000000', '#ff00ff'],
+  },
+  {
+    id: 'p8',
+    name: 'Pro Yoga Mat 5mm',
+    brand: 'Ally Fashion',
+    price: 290.00,
+    rating: 4.7,
+    reviews: 156,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?q=80&w=600&auto=format&fit=crop',
+    category: 'gym-fitness',
+    colors: ['#800080', '#000000', '#008080'],
+  },
+  {
+    id: 'p9',
+    name: 'Air Jordan XXXVI Low',
+    brand: 'Jordan',
+    price: 850.00,
+    rating: 4.8,
+    reviews: 122,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1605348532760-6753d2c43329?q=80&w=600&auto=format&fit=crop',
+    category: 'basketball',
+    isNew: true,
+    colors: ['#ffffff', '#ff0000', '#000000'],
+  },
+  {
+    id: 'p10',
+    name: 'Court Zoom Vapor Cage 4',
+    brand: 'Nike',
+    price: 680.00,
+    rating: 4.5,
+    reviews: 89,
+    currency: 'AED',
+    isFavorite: false,
+    imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=600&auto=format&fit=crop',
+    category: 'tennis',
+    colors: ['#ffffff', '#0000ff'],
+  }
+];
