@@ -11,6 +11,31 @@ export async function createOrderAction(cartItems: CartItem[], shippingDetails: 
     return { error: 'Not authenticated' };
   }
 
+  // Validate cart items
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    return { error: 'Cart cannot be empty' };
+  }
+
+  const isValidItems = cartItems.every(
+    (item) =>
+      typeof item.price === 'number' &&
+      item.price >= 0 &&
+      typeof item.quantity === 'number' &&
+      item.quantity > 0 &&
+      item.quantity <= 100 &&
+      typeof item.name === 'string' &&
+      item.name.trim().length > 0
+  );
+
+  if (!isValidItems) {
+    return { error: 'Invalid items in cart' };
+  }
+
+  // Validate shipping details
+  if (!shippingDetails || typeof shippingDetails !== 'object' || !shippingDetails.address || !shippingDetails.city) {
+    return { error: 'Incomplete shipping details' };
+  }
+
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const tax = subtotal * 0.05;
   const shipping = subtotal > 500 ? 0 : 50;

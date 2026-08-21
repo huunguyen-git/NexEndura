@@ -44,6 +44,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
+  // RBAC for /admin: Require admin role
+  if (user && url.pathname.startsWith('/admin')) {
+    const role = user.app_metadata?.role || user.user_metadata?.role
+    // Allow admin role or fallback for local dev if explicitly designated in metadata
+    if (role !== 'admin') {
+      const redirectUrl = new URL('/account', request.url)
+      redirectUrl.searchParams.set('error', 'admin_access_required')
+      return NextResponse.redirect(redirectUrl)
+    }
+  }
+
   return supabaseResponse
 }
 
