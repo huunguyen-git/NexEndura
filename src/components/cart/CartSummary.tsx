@@ -1,11 +1,13 @@
 'use client';
 
 import { useCartStore } from '@/stores/useCartStore';
+import { useCurrencyStore } from '@/stores/useCurrencyStore';
 import { ShieldCheck, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CartSummary() {
   const { items, getSubtotal, isB2BMode, toggleB2BMode } = useCartStore();
+  const { convertPrice } = useCurrencyStore();
 
   if (items.length === 0) return null;
 
@@ -13,6 +15,11 @@ export default function CartSummary() {
   const tax = subtotal * 0.05; // 5% mock VAT
   const shipping = subtotal > 500 ? 0 : 50; // Free shipping over 500
   const total = subtotal + tax + shipping;
+  
+  const convSubtotal = convertPrice(subtotal);
+  const convTax = convertPrice(tax);
+  const convShipping = convertPrice(shipping);
+  const convTotal = convertPrice(total);
 
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 shadow-card border border-gray-50 flex flex-col h-fit sticky top-28">
@@ -21,7 +28,7 @@ export default function CartSummary() {
       <div className="space-y-4 text-sm mb-6">
         <div className="flex justify-between items-center text-gray-600">
           <span>Subtotal</span>
-          <span className="font-bold text-gray-900">{subtotal.toFixed(2)} AED</span>
+          <span className="font-bold text-gray-900">{convSubtotal.valueFormatted} {convSubtotal.currency}</span>
         </div>
         
         {isB2BMode && (
@@ -33,12 +40,12 @@ export default function CartSummary() {
 
         <div className="flex justify-between items-center text-gray-600">
           <span>Estimated Tax (5%)</span>
-          <span className="font-bold text-gray-900">{tax.toFixed(2)} AED</span>
+          <span className="font-bold text-gray-900">{convTax.valueFormatted} {convTax.currency}</span>
         </div>
         <div className="flex justify-between items-center text-gray-600">
           <span>Shipping</span>
           <span className="font-bold text-gray-900">
-            {shipping === 0 ? <span className="text-green-600">Free</span> : `${shipping.toFixed(2)} AED`}
+            {shipping === 0 ? <span className="text-green-600">Free</span> : `${convShipping.valueFormatted} ${convShipping.currency}`}
           </span>
         </div>
       </div>
@@ -48,8 +55,8 @@ export default function CartSummary() {
       <div className="flex justify-between items-end mb-8">
         <span className="text-lg font-bold text-gray-900">Total</span>
         <div className="text-right">
-          <div className="text-3xl font-black text-brand-primary leading-none mb-1">{total.toFixed(2)}</div>
-          <div className="text-xs font-bold text-gray-400 uppercase">AED</div>
+          <div className="text-3xl font-black text-brand-primary leading-none mb-1">{convTotal.valueFormatted}</div>
+          <div className="text-xs font-bold text-gray-400 uppercase">{convTotal.currency}</div>
         </div>
       </div>
 
