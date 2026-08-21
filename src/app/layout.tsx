@@ -13,8 +13,51 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NexEndura — Engineering Human Potential",
-  description: "Premium, performance-driven sports e-commerce platform.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://nexendura.com'),
+  title: {
+    default: "NexEndura — Engineering Human Potential | Premium Sports Equipment",
+    template: "%s | NexEndura",
+  },
+  description: "Next-generation sports equipment, performance matchwear, carbon footwear, and interactive custom team kit builder.",
+  keywords: [
+    "sports equipment",
+    "performance gear",
+    "custom kit builder",
+    "football boots",
+    "running shoes",
+    "tennis",
+    "basketball",
+    "gym fitness",
+  ],
+  authors: [{ name: "NexEndura Labs" }],
+  creator: "NexEndura",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://nexendura.com",
+    siteName: "NexEndura",
+    title: "NexEndura — Engineering Human Potential",
+    description: "Next-generation sports equipment, performance matchwear, carbon footwear, and custom kit builder.",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1200&auto=format&fit=crop",
+        width: 1200,
+        height: 630,
+        alt: "NexEndura Sports Engineering",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NexEndura — Engineering Human Potential",
+    description: "Next-generation sports equipment, performance matchwear, and custom team kit builder.",
+    images: ["https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1200&auto=format&fit=crop"],
+    creator: "@nexendura",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 import TopBar from "@/components/layout/TopBar";
