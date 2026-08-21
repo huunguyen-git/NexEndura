@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useFilterStore } from '@/stores/useFilterStore';
 import { useCartStore } from '@/stores/useCartStore';
 import { useWishlistStore } from '@/stores/useWishlistStore';
+import { useCurrencyStore, Currency } from '@/stores/useCurrencyStore';
 import MobileNav from './MobileNav';
 
 export default function MainNav({ user }: { user?: any }) {
@@ -13,7 +14,16 @@ export default function MainNav({ user }: { user?: any }) {
   const totalItems = useCartStore((state) => state.getTotalItems());
   const syncCartDb = useCartStore((state) => state.syncWithDb);
   const syncWishlistDb = useWishlistStore((state) => state.syncWithDb);
+  const { activeCurrency, setCurrency } = useCurrencyStore();
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  
+  const FLAGS: Record<Currency, string> = {
+    AED: '🇦🇪',
+    USD: '🇺🇸',
+    EUR: '🇪🇺',
+    GBP: '🇬🇧'
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -39,7 +49,7 @@ export default function MainNav({ user }: { user?: any }) {
         {/* Desktop Links */}
         <nav className="hidden lg:flex items-center gap-6 text-sm font-bold text-gray-700">
           <Link href="/shop" className="hover:text-brand-primary transition-colors">Shop All</Link>
-          <Link href="/brands" className="text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1.5"><Store className="w-4 h-4" /> Brands</Link>
+          <Link href="/brands" className="text-gray-700 hover:text-brand-primary transition-colors flex items-center gap-1.5"><Store className="w-4 h-4" /> Brands</Link>
         </nav>
 
         {/* Search Bar */}
@@ -59,6 +69,32 @@ export default function MainNav({ user }: { user?: any }) {
 
         {/* Right Actions */}
         <div className="flex items-center gap-4 lg:gap-6 text-sm font-medium text-brand-primary">
+
+          {mounted && (
+            <div className="relative">
+              <button 
+                onClick={() => setIsCountryOpen(!isCountryOpen)}
+                className="hidden sm:flex items-center gap-2 hover:text-blue-600 transition-colors"
+              >
+                <span className="text-lg">{FLAGS[activeCurrency]}</span>
+                <span>{activeCurrency}</span> <ChevronDown className="h-4 w-4 text-gray-400" />
+              </button>
+              
+              {isCountryOpen && (
+                <div className="absolute top-full right-0 mt-2 w-28 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden py-1 z-50">
+                  {(Object.keys(FLAGS) as Currency[]).map((c) => (
+                    <button 
+                      key={c}
+                      onClick={() => { setCurrency(c); setIsCountryOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 ${activeCurrency === c ? 'font-bold text-blue-600' : 'text-gray-700'}`}
+                    >
+                      <span>{FLAGS[c]}</span> {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <Link href="/cart" id="cart-icon" className="flex items-center gap-2 hover:text-blue-600 transition-colors relative">
             <div className="relative">

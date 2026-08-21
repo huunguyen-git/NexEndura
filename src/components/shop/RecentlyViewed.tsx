@@ -5,9 +5,11 @@ import { Product } from '@/data/products';
 import { getProducts } from '@/lib/products';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useCurrencyStore } from '@/stores/useCurrencyStore';
 
 export default function RecentlyViewed({ currentProductId }: { currentProductId?: string }) {
   const [viewed, setViewed] = useState<Product[]>([]);
+  const { convertPrice } = useCurrencyStore();
 
   useEffect(() => {
     async function loadRecentlyViewed() {
@@ -49,7 +51,7 @@ export default function RecentlyViewed({ currentProductId }: { currentProductId?
               <div className="p-4">
                 <div className="text-xs font-bold text-gray-500 mb-1">{product.brand}</div>
                 <h4 className="font-medium text-gray-900 text-sm mb-2 line-clamp-1">{product.name}</h4>
-                <div className="font-black text-gray-900">${product.price.toFixed(2)}</div>
+                <div className="font-black text-gray-900">{convertPrice(product.price).valueFormatted} <span className="text-xs text-gray-500 font-normal uppercase">{convertPrice(product.price).currency}</span></div>
               </div>
             </div>
           </Link>

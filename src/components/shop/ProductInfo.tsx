@@ -5,6 +5,7 @@ import { Star, Heart, ShoppingBag, Check } from 'lucide-react';
 import { Product } from '@/data/products';
 import { useCartStore } from '@/stores/useCartStore';
 import { useWishlistStore } from '@/stores/useWishlistStore';
+import { useCurrencyStore } from '@/stores/useCurrencyStore';
 import SizeFitPredictor from './SizeFitPredictor';
 
 export default function ProductInfo({ product }: { product: Product }) {
@@ -17,8 +18,10 @@ export default function ProductInfo({ product }: { product: Product }) {
 
   const addToCart = useCartStore((state) => state.addToCart);
   const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const { convertPrice } = useCurrencyStore();
   
   const isWished = isInWishlist(product.id);
+  const priceObj = convertPrice(product.price);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     if (isAdding) return;
@@ -51,7 +54,7 @@ export default function ProductInfo({ product }: { product: Product }) {
         
         <div className="flex items-center justify-between">
           <div className="text-3xl font-bold text-blue-600">
-            {product.price.toFixed(2)} <span className="text-lg font-medium text-gray-500 uppercase">{product.currency}</span>
+            {priceObj.valueFormatted} <span className="text-lg font-medium text-gray-500 uppercase">{priceObj.currency}</span>
           </div>
           
           <div className="flex items-center gap-1">

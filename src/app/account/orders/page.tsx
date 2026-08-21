@@ -1,6 +1,7 @@
 import { Package, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { getOrdersAction } from '@/app/actions/orders';
+import ClientPriceDisplay from '@/components/shop/ClientPriceDisplay';
 
 export default async function OrdersPage() {
   const orders = await getOrdersAction();
@@ -43,12 +44,12 @@ export default async function OrdersPage() {
                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(order.status)}`}>
                   {order.status}
                 </span>
-                <span className="font-bold text-gray-900">${order.total.toFixed(2)}</span>
+                <ClientPriceDisplay amount={order.total} className="font-bold text-gray-900" />
               </div>
             </div>
 
             <div className="space-y-3">
-              {order.items.map((item, index) => (
+              {order.items.map((item: any, index: number) => (
                 <div key={index} className="flex justify-between items-center">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center shrink-0">
@@ -59,7 +60,7 @@ export default async function OrdersPage() {
                       <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                     </div>
                   </div>
-                  <span className="font-medium text-gray-900">${item.price.toFixed(2)}</span>
+                  <ClientPriceDisplay amount={item.price} className="font-medium text-gray-900" />
                 </div>
               ))}
             </div>

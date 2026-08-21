@@ -1,12 +1,14 @@
 'use client';
 
 import { useCartStore } from '@/stores/useCartStore';
+import { useCurrencyStore } from '@/stores/useCurrencyStore';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function CartItemList() {
   const { items, updateQuantity, removeFromCart } = useCartStore();
+  const { convertPrice } = useCurrencyStore();
 
   if (items.length === 0) {
     return (
@@ -48,7 +50,7 @@ export default function CartItemList() {
                     </Link>
                   </div>
                   <div className="text-lg font-black text-brand-primary whitespace-nowrap">
-                    {(item.price * item.quantity).toFixed(2)} <span className="text-xs text-gray-500 uppercase">{item.currency}</span>
+                    {convertPrice(item.price * item.quantity).valueFormatted} <span className="text-xs text-gray-500 uppercase">{convertPrice(item.price).currency}</span>
                   </div>
                 </div>
 

@@ -1,17 +1,18 @@
 'use client';
 
-import { useWishlistStore } from '@/stores/useWishlistStore';
 import { getProducts } from '@/lib/products';
-import { HeartCrack } from 'lucide-react';
+import { useCurrencyStore } from '@/stores/useCurrencyStore';
+import { useWishlistStore } from '@/stores/useWishlistStore';
+import { HeartCrack, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Star } from 'lucide-react';
 
 export default function WishlistPage() {
   const { itemIds } = useWishlistStore();
+  const { convertPrice } = useCurrencyStore();
   const [mounted, setMounted] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
 
   // Fetch products client-side to avoid mixing async server logic with client hooks
   useEffect(() => {
@@ -69,10 +70,10 @@ export default function WishlistPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl font-black text-gray-900">${product.price.toFixed(2)}</span>
+                      <span className="text-xl font-black text-gray-900">{convertPrice(product.price).valueFormatted} <span className="text-sm font-normal text-gray-500 uppercase">{convertPrice(product.price).currency}</span></span>
                       {product.comparePrice && (
                         <span className="text-sm font-medium text-gray-400 line-through">
-                          ${product.comparePrice.toFixed(2)}
+                          {convertPrice(product.comparePrice).valueFormatted} <span className="text-xs uppercase">{convertPrice(product.comparePrice).currency}</span>
                         </span>
                       )}
                     </div>

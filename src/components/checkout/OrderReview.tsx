@@ -1,6 +1,7 @@
 'use client';
 
 import { useCartStore } from '@/stores/useCartStore';
+import { useCurrencyStore } from '@/stores/useCurrencyStore';
 import { CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -8,6 +9,7 @@ import { createOrderAction } from '@/app/actions/orders';
 
 export default function OrderReview({ shippingDetails, paymentMethod, onBack, onComplete, forceSuccess = false }: { shippingDetails?: any, paymentMethod?: string, onBack: () => void, onComplete?: () => void, forceSuccess?: boolean }) {
   const { items, getSubtotal, clearCart, isB2BMode } = useCartStore();
+  const { convertPrice } = useCurrencyStore();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(forceSuccess);
   const router = useRouter();
@@ -18,6 +20,11 @@ export default function OrderReview({ shippingDetails, paymentMethod, onBack, on
   const tax = subtotal * 0.05;
   const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + tax + shipping;
+  
+  const cSubtotal = convertPrice(subtotal);
+  const cTax = convertPrice(tax);
+  const cShipping = convertPrice(shipping);
+  const cTotal = convertPrice(total);
 
   const handlePlaceOrder = async () => {
     setIsPlacingOrder(true);
@@ -74,7 +81,7 @@ export default function OrderReview({ shippingDetails, paymentMethod, onBack, on
               </div>
             </div>
             <div className="font-bold text-gray-900 whitespace-nowrap">
-              {(item.price * item.quantity).toFixed(2)} {item.currency}
+              {convertPrice(item.price * item.quantity).valueFormatted} {convertPrice(item.price * item.quantity).currency}
             </div>
           </div>
         ))}
@@ -83,7 +90,7 @@ export default function OrderReview({ shippingDetails, paymentMethod, onBack, on
       <div className="bg-gray-50 rounded-2xl p-6 mb-8 space-y-3">
         <div className="flex justify-between text-sm text-gray-600">
           <span>Subtotal</span>
-          <span className="font-bold text-gray-900">{subtotal.toFixed(2)} AED</span>
+          <span className="font-bold text-gray-900">{cSubtotal.valueFormatted} {cSubtotal.currency}</span>
         </div>
         {isB2BMode && (
           <div className="flex justify-between text-sm text-green-600 font-medium">
@@ -93,15 +100,15 @@ export default function OrderReview({ shippingDetails, paymentMethod, onBack, on
         )}
         <div className="flex justify-between text-sm text-gray-600">
           <span>Tax (5%)</span>
-          <span className="font-bold text-gray-900">{tax.toFixed(2)} AED</span>
+          <span className="font-bold text-gray-900">{cTax.valueFormatted} {cTax.currency}</span>
         </div>
         <div className="flex justify-between text-sm text-gray-600 border-b border-gray-200 pb-3">
           <span>Shipping</span>
-          <span className="font-bold text-gray-900">{shipping === 0 ? 'Free' : `${shipping.toFixed(2)} AED`}</span>
+          <span className="font-bold text-gray-900">{shipping === 0 ? 'Free' : `${cShipping.valueFormatted} ${cShipping.currency}`}</span>
         </div>
         <div className="flex justify-between items-center pt-2">
           <span className="text-lg font-bold text-gray-900">Total</span>
-          <span className="text-2xl font-black text-brand-primary">{total.toFixed(2)} AED</span>
+          <span className="text-2xl font-black text-brand-primary">{cTotal.valueFormatted} {cTotal.currency}</span>
         </div>
       </div>
 
