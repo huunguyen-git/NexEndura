@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <rect width="100" height="100" fill="#000000" rx="50" />
+  <!-- ASICS Spiral / Lettermark Silhouette -->
+  <g fill="#ffffff">
+    <path d="M48,32 C38,32 30,40 30,50 C30,60 38,68 48,68 C54,68 59,65 62,60 L54,55 C52,58 49,60 46,60 C40,60 36,55 36,50 C36,45 40,40 46,40 C50,40 53,42 55,45 L63,40 C59,35 54,32 48,32 Z" />
+    <path d="M60,42 L74,68 L66,68 L63,62 L53,62 L50,68 L42,68 L56,42 L60,42 Z M58,52 L55,57 L61,57 L58,52 Z" />
+  </g>
+</svg>

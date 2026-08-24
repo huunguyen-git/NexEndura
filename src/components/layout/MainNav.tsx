@@ -9,6 +9,8 @@ import { useWishlistStore } from '@/stores/useWishlistStore';
 import { useCurrencyStore, Currency } from '@/stores/useCurrencyStore';
 import MobileNav from './MobileNav';
 
+import CountryFlag from '@/components/ui/CountryFlag';
+
 export default function MainNav({ user }: { user?: any }) {
   const { openSearchModal } = useFilterStore();
   const totalItems = useCartStore((state) => state.getTotalItems());
@@ -18,12 +20,7 @@ export default function MainNav({ user }: { user?: any }) {
   const [isCountryOpen, setIsCountryOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   
-  const FLAGS: Record<Currency, string> = {
-    AED: '🇦🇪',
-    USD: '🇺🇸',
-    EUR: '🇪🇺',
-    GBP: '🇬🇧'
-  };
+  const CURRENCIES: Currency[] = ['AED', 'USD', 'EUR', 'GBP'];
 
   useEffect(() => {
     setMounted(true);
@@ -74,21 +71,23 @@ export default function MainNav({ user }: { user?: any }) {
             <div className="relative">
               <button 
                 onClick={() => setIsCountryOpen(!isCountryOpen)}
-                className="hidden sm:flex items-center gap-2 hover:text-blue-600 transition-colors"
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50/80 hover:bg-gray-100 hover:border-gray-300 transition-all font-bold text-gray-800 shadow-xs"
               >
-                <span className="text-lg">{FLAGS[activeCurrency]}</span>
-                <span>{activeCurrency}</span> <ChevronDown className="h-4 w-4 text-gray-400" />
+                <CountryFlag currency={activeCurrency} className="w-4 h-4 shadow-xs" />
+                <span className="text-xs font-black tracking-wide text-gray-900">{activeCurrency}</span> 
+                <ChevronDown className="h-3.5 w-3.5 text-gray-500 ml-0.5" />
               </button>
               
               {isCountryOpen && (
-                <div className="absolute top-full right-0 mt-2 w-28 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden py-1 z-50">
-                  {(Object.keys(FLAGS) as Currency[]).map((c) => (
+                <div className="absolute top-full right-0 mt-2 w-32 bg-white border border-gray-100 shadow-xl rounded-2xl overflow-hidden py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  {CURRENCIES.map((c) => (
                     <button 
                       key={c}
                       onClick={() => { setCurrency(c); setIsCountryOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 ${activeCurrency === c ? 'font-bold text-blue-600' : 'text-gray-700'}`}
+                      className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center gap-2.5 hover:bg-blue-50/60 transition-colors ${activeCurrency === c ? 'font-black text-blue-600 bg-blue-50/40' : 'font-semibold text-gray-700'}`}
                     >
-                      <span>{FLAGS[c]}</span> {c}
+                      <CountryFlag currency={c} className="w-4 h-4 shadow-xs" />
+                      <span className="tracking-wide">{c}</span>
                     </button>
                   ))}
                 </div>
