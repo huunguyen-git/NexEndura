@@ -2,7 +2,7 @@ import { Heart, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Product } from '@/data/products';
 import { useWishlistStore } from '@/stores/useWishlistStore';
-import { useCurrencyStore } from '@/stores/useCurrencyStore';
+import ClientPriceDisplay from './ClientPriceDisplay';
 
 interface ProductCardProps {
   product: Product;
@@ -10,9 +10,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { isInWishlist, toggleWishlist } = useWishlistStore();
-  const { convertPrice } = useCurrencyStore();
   const isWished = isInWishlist(product.id);
-  const priceObj = convertPrice(product.price);
 
   return (
     <div className="group cursor-pointer relative">
@@ -38,8 +36,8 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
         </div>
         
-        <div className="font-bold text-lg text-gray-900">
-          {priceObj.valueFormatted} <span className="text-xs font-normal text-gray-500 uppercase">{priceObj.currency}</span>
+        <div className="font-bold text-lg text-gray-900" suppressHydrationWarning>
+          <ClientPriceDisplay amount={product.price} />
         </div>
       </Link>
       

@@ -30,8 +30,8 @@ export default function StoreCarousel() {
             onClick={() => handleStoreClick(store.id)}
             className="flex items-center gap-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-card hover:-translate-y-0.5 transition-all cursor-pointer group"
           >
-            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center border border-gray-100 overflow-hidden shrink-0 shadow-sm relative group-hover:scale-105 transition-transform">
-                <img src={store.logoUrl} alt={store.name} className="w-full h-full object-cover" />
+            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center border border-gray-100 overflow-hidden shrink-0 shadow-sm relative group-hover:scale-105 transition-transform p-2.5">
+                <img src={store.logoUrl} alt={store.name} className="w-full h-full object-contain" />
             </div>
             <div>
               <h3 className="font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{store.name}</h3>

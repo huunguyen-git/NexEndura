@@ -35,7 +35,7 @@ const securityHeaders = [
       default-src 'self';
       script-src 'self' 'unsafe-eval' 'unsafe-inline' https://unpkg.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      img-src 'self' blob: data: https://images.unsplash.com https://loremflickr.com https://live.staticflickr.com https://*.supabase.co;
+      img-src 'self' blob: data: https://images.unsplash.com https://flagcdn.com https://cdn.jsdelivr.net https://upload.wikimedia.org https://loremflickr.com https://live.staticflickr.com https://*.supabase.co;
       font-src 'self' data: https://fonts.gstatic.com;
       connect-src 'self' https://*.supabase.co wss://*.supabase.co;
       frame-ancestors 'none';
@@ -52,6 +52,18 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'flagcdn.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.jsdelivr.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
       },
       {
         protocol: 'https',

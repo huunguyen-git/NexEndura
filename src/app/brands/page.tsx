@@ -29,10 +29,8 @@ export default function BrandsPage() {
                 {/* Content */}
                 <div className="p-6 relative pt-12 flex-1 flex flex-col">
                   {/* Logo */}
-                  <div className="absolute -top-10 left-6 w-20 h-20 bg-white rounded-full p-1 shadow-md border border-gray-50 z-20">
-                    <div className="w-full h-full rounded-full overflow-hidden">
-                      <img src={store.logoUrl} alt={`${store.name} logo`} className="w-full h-full object-cover" />
-                    </div>
+                  <div className="absolute -top-10 left-6 w-20 h-20 bg-white rounded-full p-2.5 shadow-md border border-gray-100 z-20 flex items-center justify-center">
+                    <img src={store.logoUrl} alt={`${store.name} logo`} className="w-full h-full object-contain" />
                   </div>
 
                   <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{store.name}</h3>

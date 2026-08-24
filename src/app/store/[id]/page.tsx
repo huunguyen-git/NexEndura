@@ -31,11 +31,11 @@ export default async function StoreDetailPage({ params }: { params: Promise<{ id
           <div className="bg-white rounded-[2rem] p-6 md:p-10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.15)] flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8 border border-gray-50">
             
             {/* Logo */}
-            <div className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden shrink-0 border-4 border-white shadow-md bg-white">
+            <div className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden shrink-0 border-4 border-white shadow-md bg-white p-4 flex items-center justify-center">
               <img 
                 src={store.logoUrl} 
                 alt={`${store.name} logo`} 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
             
