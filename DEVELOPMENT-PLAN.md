@@ -16,6 +16,8 @@ Full-stack sports e-commerce platform built with **Next.js 15 (App Router)**, **
 - [Phase 3 — Supabase Auth & Database](#phase-3--supabase-auth--database)
 - [Phase 4 — Landing Page](#phase-4--landing-page)
 - [Phase 5 — E2E Sweep, Security & Deployment](#phase-5--e2e-sweep-security--deployment)
+- [Phase 6 — Future Prospects](#phase-6--future-prospects)
+- [**Phase 7 — Admin Panel DB Persistence** ⚠️ Security Debt](#phase-7--admin-panel-db-persistence--security-debt)
 - [Database Schema](#database-schema)
 - [RLS Policy Matrix](#rls-policy-matrix)
 - [File Structure](#file-structure)
@@ -631,11 +633,11 @@ EXECUTE FUNCTION notify_restock();
 | `wishlist.ts` | `getWishlist`, `addToWishlist`, `removeFromWishlist` |
 | `notifications.ts` | `subscribe`, `unsubscribe`, `getSubscriptions` |
 | `reviews.ts` | `createReview`, `getProductReviews` |
-| `admin/products.ts` | `createProduct`, `updateProduct`, `deleteProduct`, `uploadImage` |
-| `admin/inventory.ts` | `updateStock`, `getInventoryMatrix`, `reserveStock`, `releaseStock` |
-| `admin/bundles.ts` | `createBundle`, `updateBundle`, `deleteBundle`, `checkAvailability` |
-| `admin/orders.ts` | `getAllOrders`, `updateStatus`, `generateInvoice` |
-| `admin/analytics.ts` | `getRevenueSummary`, `getTopProducts`, `getStockAlerts` |
+| `admin/products.ts` | `createProduct`, `updateProduct`, `deleteProduct`, `uploadImage` — ⚠️ **not yet wired to DB (Finding #7)** |
+| `admin/inventory.ts` | `updateStock`, `getInventoryMatrix`, `reserveStock`, `releaseStock` — ⚠️ **not yet wired to DB (Finding #7)** |
+| `admin/bundles.ts` | `createBundle`, `updateBundle`, `deleteBundle`, `checkAvailability` — ⚠️ **not yet wired to DB (Finding #7)** |
+| `admin/orders.ts` | `getAllOrders`, `updateStatus`, `generateInvoice` — ⚠️ **not yet wired to DB (Finding #7)** |
+| `admin/analytics.ts` | `getRevenueSummary`, `getTopProducts`, `getStockAlerts` — ⚠️ **not yet wired to DB (Finding #7)** |
 
 ---
 
@@ -697,6 +699,7 @@ EXECUTE FUNCTION notify_restock();
 - [ ] Content Security Policy headers in `next.config.ts`
 - [ ] PayPal webhook signature verification
 - [ ] SQL injection prevention (parameterized queries via Supabase client)
+- [ ] ⚠️ **Admin panel mutations wired to Supabase** — see [Phase 7](#phase-7--admin-panel-db-persistence--security-debt)
 
 ### Testing
 
@@ -903,6 +906,7 @@ full-stack-shopping-website/
 | 9 | Zustand for client state | Lightweight, no boilerplate, perfect for cart/filters/UI state | 2026-08-05 |
 | 10 | Netlify deployment | OpenNext adapter, auto SSR + Edge, good DX | 2026-08-05 |
 | 11 | 5 MVP sports | Football, Basketball, Running, Tennis, Gym & Fitness — expandable | 2026-08-05 |
+| 12 | Admin panel uses Zustand (Phase 1-2) | Scaffolded quickly with mock data for UI development; **intentionally deferred** to Phase 7 for DB wiring — marked as security debt in audit report Finding #7 | 2026-08-25 |
 
 ---
 
@@ -925,4 +929,132 @@ A dedicated system to reward users for their active lifestyle by syncing externa
 - **Loyalty Points**: Badges and milestones translate into loyalty points, which can be redeemed for discounts at checkout.
 - **UI Extension**: Will require a new `/account/fitness` dashboard to manage the integration and view earned badges.
 
-*Last updated: 2026-08-06*
+*Last updated: 2026-09-04*
+
+---
+
+## Phase 7 — Admin Panel DB Persistence ⚠️ Security Debt
+
+> **Origin**: Security Audit Finding #7 (2026-08-25). The admin panel (`/admin/*`) was scaffolded using local Zustand state populated from mock data files (`src/data/`). All mutations — order status updates, stock adjustments, product CRUD — exist **only in memory** and are discarded on page refresh. This is a functional integrity and security gap.
+
+### Problem Statement
+
+Currently:
+- `useAdminStore` initialises from `src/data/products.ts`, `src/data/orders.ts`, `src/data/inventory.ts`, `src/data/bundles.ts`
+- Mutations (`updateOrderStatus`, `updateStock`, `deleteProduct`, etc.) call `set()` on the Zustand store only
+- **Nothing is ever written to Supabase**
+- Every page refresh resets all admin changes
+- Multiple admin sessions see completely different data
+- No audit trail exists for any admin action
+
+### Impact
+
+| Risk | Detail |
+|------|--------|
+| **Data integrity** | Stock adjustments reset on deploy/refresh — inventory counts are unreliable |
+| **Order management** | Status changes (shipped, delivered) are not persisted — customer orders never update |
+| **Security (audit trail)** | No record of who changed what, when — required for any real commerce operation |
+| **CWE-693** | Protection mechanism failure — admin controls exist in the UI but have no real effect |
+
+### Prerequisites (must be done first)
+
+1. Admin RLS policies must exist in Supabase (the RLS matrix in this plan already specifies `🔒 Admin` for write ops on `products`, `product_variants`, `orders`, `order_items`).
+2. A user must have `app_metadata.role = 'admin'` set via the Supabase service role key (already enforced in middleware as of 2026-08-25 security fix).
+3. The service role key (`SUPABASE_SERVICE_ROLE_KEY`) must be set in Netlify env vars for admin server actions — **never expose this to the client**.
+
+### Implementation Plan
+
+#### Step 1 — Admin Supabase Client
+
+Create `src/lib/supabase/admin.ts` that uses the **service role key** to bypass RLS for admin-only operations:
+
+```ts
+// src/lib/supabase/admin.ts
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+
+// SECURITY: This client bypasses RLS entirely.
+// ONLY import in server-side admin actions — never in client components.
+export function createAdminClient() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('[NexEndura] SUPABASE_SERVICE_ROLE_KEY is required for admin operations')
+  }
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+}
+```
+
+> **Alternative**: Use the standard `createClient()` (anon key) if admin RLS policies grant `app_metadata.role = 'admin'` full access. This is preferable as it keeps RLS as the enforcement layer. The service role approach is only needed if RLS policies are not granular enough.
+
+#### Step 2 — Server Actions to Create
+
+| File | Actions |
+|------|---------|
+| `src/app/actions/admin/orders.ts` | `getAllOrdersAction()` — reads all orders; `updateOrderStatusAction(id, status)` — updates status + `updated_at` |
+| `src/app/actions/admin/inventory.ts` | `getInventoryAction()` — reads all variants with stock counts; `updateStockAction(variantId, newStock)` — updates `stock_count` |
+| `src/app/actions/admin/products.ts` | `getAllProductsAction()` — reads all products incl. drafts; `deleteProductAction(id)` — soft-delete (set `status = 'archived'`); `updateProductAction(id, data)` |
+| `src/app/actions/admin/analytics.ts` | `getAdminAnalyticsAction()` — aggregates revenue, order counts, low-stock alerts from Supabase |
+
+All admin actions must:
+1. Call `supabase.auth.getUser()` and verify `user.app_metadata.role === 'admin'`
+2. Return `{ error: 'Unauthorized' }` if the check fails — **never trust the middleware alone**
+3. Use generic error messages for client responses; log full errors server-side
+
+#### Step 3 — Admin Page Rewrites
+
+Replace `useAdminStore` usage with direct server action calls or React Query hooks:
+
+| Page | Change |
+|------|--------|
+| `src/app/admin/orders/page.tsx` | Convert to Server Component; call `getAllOrdersAction()`; status change via a `<form>` with `updateOrderStatusAction` |
+| `src/app/admin/inventory/page.tsx` | Convert to Server Component; stock input becomes a form with `updateStockAction`; use `revalidatePath('/admin/inventory')` after mutation |
+| `src/app/admin/products/page.tsx` | Call `getAllProductsAction()`; delete button calls `deleteProductAction`; edit routes to full product edit form |
+| `src/app/admin/analytics/page.tsx` | Call `getAdminAnalyticsAction()`; remove mock `mockChartData` — replace with real aggregated data |
+
+#### Step 4 — After-Wiring Cleanup
+
+- Remove `src/data/orders.ts` mock data (or rename to `_legacy/` and keep for reference)
+- Remove `src/data/inventory.ts` mock data
+- Remove `src/stores/useAdminStore.ts` (or strip it down to UI-only state like sort/filter)
+- Deprecate `import { orders } from '@/data/orders'` across admin pages
+
+#### Step 5 — Audit Trail (Optional but Recommended)
+
+Add a `admin_audit_log` table:
+
+```sql
+CREATE TABLE admin_audit_log (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    admin_id    UUID REFERENCES public.users(id),
+    action      TEXT NOT NULL,           -- 'update_order_status', 'update_stock', etc.
+    target_type TEXT NOT NULL,           -- 'order', 'product_variant', etc.
+    target_id   UUID NOT NULL,
+    old_value   JSONB,
+    new_value   JSONB,
+    created_at  TIMESTAMPTZ DEFAULT now()
+);
+```
+
+RLS: Admin-only SELECT, trigger-only INSERT (set by server actions).
+
+### Effort Estimate
+
+| Task | Estimate |
+|------|----------|
+| Step 1 — Admin Supabase client | 15 min |
+| Step 2 — All 4 admin server action files | 3-4 hours |
+| Step 3 — Admin page rewrites (4 pages) | 3-4 hours |
+| Step 4 — Mock data cleanup | 30 min |
+| Step 5 — Audit log table + wiring | 2-3 hours |
+| **Total** | **~8-12 hours** |
+
+### Acceptance Criteria
+
+- [ ] Changing an order status in `/admin/orders` persists to Supabase and survives a page refresh
+- [ ] Editing stock count in `/admin/inventory` persists to Supabase and is reflected in `/product/[slug]` stock display
+- [ ] Deleting a product in `/admin/products` sets `status = 'archived'` and removes it from the public shop
+- [ ] Analytics dashboard shows real data from the `orders` table, not mock data
+- [ ] No admin page imports from `src/data/` mock files
+- [ ] `useAdminStore` is removed or limited to non-persisted UI state (search term, sort)
+- [ ] Every admin server action double-checks `app_metadata.role === 'admin'` independently of middleware

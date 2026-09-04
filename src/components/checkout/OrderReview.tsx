@@ -41,7 +41,9 @@ export default function OrderReview({ shippingDetails, paymentMethod, onBack, on
       setIsPlacingOrder(false);
       if (onComplete) onComplete();
     } catch (e: any) {
-      setErrorMsg(e.message || 'Something went wrong');
+      // Log internally — never expose raw exception messages to users
+      console.error('Unexpected error placing order:', e);
+      setErrorMsg('Something went wrong. Please try again.');
       setIsPlacingOrder(false);
     }
   };

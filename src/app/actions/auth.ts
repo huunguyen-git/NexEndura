@@ -3,6 +3,27 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
+/**
+ * SECURITY: Sanitizes the post-login redirect URL to prevent open-redirect attacks.
+ * Only allows relative paths (starting with /) that stay on the same origin.
+ * Any external URL (http/https, protocol-relative //, etc.) falls back to /account.
+ */
+function sanitizeRedirectUrl(url: string | null | undefined): string {
+  if (!url || typeof url !== 'string') return '/account'
+  // Reject absolute URLs, protocol-relative URLs, and data: URIs
+  if (
+    url.startsWith('http') ||
+    url.startsWith('//') ||
+    url.startsWith('\\') ||
+    url.startsWith('data:')
+  ) {
+    return '/account'
+  }
+  // Must start with / to be a valid relative path
+  if (!url.startsWith('/')) return '/account'
+  return url
+}
+
 export async function loginAction(prevState: any, formData: FormData) {
   const supabase = await createClient()
   
@@ -19,11 +40,11 @@ export async function loginAction(prevState: any, formData: FormData) {
   })
 
   if (error) {
-    return { error: error.message }
+    // Return a generic message — do not expose Supabase internal error details to the client
+    return { error: 'Invalid email or password. Please try again.' }
   }
 
-  const nextUrl = formData.get('nextUrl') as string || '/account'
-
+  const nextUrl = sanitizeRedirectUrl(formData.get('nextUrl') as string)
   redirect(nextUrl)
 }
 
@@ -49,19 +70,21 @@ export async function signupAction(prevState: any, formData: FormData) {
   })
 
   if (error) {
-    let msg = error.message;
-    if (msg.toLowerCase().includes('rate limit')) {
-      msg = 'This email is already in use or you have tried too many times. Please use a different email or try again later.';
+    // Show a user-friendly message; map known patterns without leaking internal details
+    if (error.status === 429 || error.message?.toLowerCase().includes('rate limit')) {
+      return { error: 'Too many attempts. Please wait a moment and try again.' }
     }
-    return { error: msg }
+    if (error.message?.toLowerCase().includes('already registered') || error.message?.toLowerCase().includes('already in use')) {
+      return { error: 'An account with this email already exists. Please sign in instead.' }
+    }
+    return { error: 'Unable to create account. Please try again.' }
   }
 
   if (!data.session) {
     redirect('/verify-email')
   }
 
-  // Next.js redirect needs to happen outside try-catch or without returning it
-  const nextUrl = formData.get('nextUrl') as string || '/account'
+  const nextUrl = sanitizeRedirectUrl(formData.get('nextUrl') as string)
   redirect(nextUrl)
 }
 

@@ -33,7 +33,7 @@ export async function syncWishlistAction(localItemIds: string[]): Promise<string
 
   if (fetchError) {
     console.error('Error fetching remote wishlist:', fetchError);
-    return { error: fetchError.message };
+    return { error: 'Unable to load wishlist. Please try again.' };
   }
 
   const remoteItemIds = (remoteWishlist || []).map((dbItem: any) => dbItem.product.slug);

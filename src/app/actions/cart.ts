@@ -58,7 +58,7 @@ export async function syncCartAction(localItems: CartItem[]): Promise<CartItem[]
 
   if (fetchError) {
     console.error('Error fetching remote cart:', fetchError);
-    return { error: fetchError.message };
+    return { error: 'Unable to load cart. Please try again.' };
   }
 
   // 2. Map remote items to CartItem format

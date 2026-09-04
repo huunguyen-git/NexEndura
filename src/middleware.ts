@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { validateEnv } from '@/lib/validate-env'
 
 export async function middleware(request: NextRequest) {
+  validateEnv()
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -45,9 +47,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // RBAC for /admin: Require admin role
+  // SECURITY: Only use app_metadata — it can only be set by the service role key.
+  // user_metadata is writable by authenticated users and must NOT be trusted for
+  // privilege checks (privilege escalation vulnerability).
   if (user && url.pathname.startsWith('/admin')) {
-    const role = user.app_metadata?.role || user.user_metadata?.role
-    // Allow admin role or fallback for local dev if explicitly designated in metadata
+    const role = user.app_metadata?.role
     if (role !== 'admin') {
       const redirectUrl = new URL('/account', request.url)
       redirectUrl.searchParams.set('error', 'admin_access_required')

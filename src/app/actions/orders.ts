@@ -11,23 +11,26 @@ export async function createOrderAction(cartItems: CartItem[], shippingDetails: 
     return { error: 'Not authenticated' };
   }
 
-  // Validate cart items
+  // Validate cart items structure
   if (!Array.isArray(cartItems) || cartItems.length === 0) {
     return { error: 'Cart cannot be empty' };
   }
 
-  const isValidItems = cartItems.every(
+  const isValidStructure = cartItems.every(
     (item) =>
-      typeof item.price === 'number' &&
-      item.price >= 0 &&
+      typeof item.id === 'string' &&
+      item.id.trim().length > 0 &&
       typeof item.quantity === 'number' &&
+      Number.isInteger(item.quantity) &&
       item.quantity > 0 &&
       item.quantity <= 100 &&
       typeof item.name === 'string' &&
-      item.name.trim().length > 0
+      item.name.trim().length > 0 &&
+      typeof item.selectedSize === 'string' &&
+      typeof item.selectedColor === 'string'
   );
 
-  if (!isValidItems) {
+  if (!isValidStructure) {
     return { error: 'Invalid items in cart' };
   }
 
@@ -36,7 +39,31 @@ export async function createOrderAction(cartItems: CartItem[], shippingDetails: 
     return { error: 'Incomplete shipping details' };
   }
 
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  // SECURITY: Re-fetch prices from the database — NEVER trust client-supplied prices.
+  // A user could manipulate Zustand state in DevTools to set item.price = 0.001.
+  // We verify the canonical price from the DB for every item before computing totals.
+  const verifiedItems: Array<CartItem & { verifiedPrice: number }> = [];
+
+  for (const item of cartItems) {
+    const { data: productData } = await supabase
+      .from('products')
+      .select('price, name')
+      .eq('slug', item.id)
+      .single();
+
+    if (!productData) {
+      // Product not found — skip silently (could have been removed from catalogue)
+      continue;
+    }
+
+    verifiedItems.push({ ...item, verifiedPrice: productData.price });
+  }
+
+  if (verifiedItems.length === 0) {
+    return { error: 'None of the cart items could be verified. Please refresh and try again.' };
+  }
+
+  const subtotal = verifiedItems.reduce((acc, item) => acc + item.verifiedPrice * item.quantity, 0);
   const tax = subtotal * 0.05;
   const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + tax + shipping;
@@ -61,16 +88,13 @@ export async function createOrderAction(cartItems: CartItem[], shippingDetails: 
     .single();
 
   if (orderError || !orderData) {
+    // Log internally — do not expose DB error details to the client
     console.error('Error creating order:', orderError);
-    return { error: orderError?.message || 'Failed to create order' };
+    return { error: 'Unable to place your order. Please try again.' };
   }
 
-  // Insert order items
-  // Since we don't have variant_id in CartItem directly on the client if it's not synced,
-  // we could just fetch it here or save basic info. But `order_items` needs `variant_id`.
-  
-  for (const item of cartItems) {
-    // Attempt to resolve variant_id
+  // Insert order items using verified (server-fetched) prices
+  for (const item of verifiedItems) {
     let variantId = null;
     const { data: productData } = await supabase.from('products').select('id').eq('slug', item.id).single();
     if (productData) {
@@ -82,15 +106,15 @@ export async function createOrderAction(cartItems: CartItem[], shippingDetails: 
       .from('order_items')
       .insert({
         order_id: orderData.id,
-        variant_id: variantId, // can be null if not found
+        variant_id: variantId,
         product_name: item.name,
         variant_label: `Size ${item.selectedSize} / ${item.selectedColor}`,
         quantity: item.quantity,
-        unit_price: item.price
+        unit_price: item.verifiedPrice  // always the DB-verified price
       });
   }
 
-  // After order created, send a notification
+  // Send order confirmation notification
   await supabase
     .from('inbox_messages')
     .insert({
@@ -131,6 +155,7 @@ export async function getOrdersAction() {
     .order('created_at', { ascending: false });
 
   if (error) {
+    // Log internally — do not expose DB error details to the client
     console.error('Error fetching orders:', error);
     return [];
   }
@@ -150,3 +175,4 @@ export async function getOrdersAction() {
     trackingLink: '#'
   }));
 }
+
